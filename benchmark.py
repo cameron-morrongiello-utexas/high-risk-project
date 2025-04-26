@@ -27,6 +27,9 @@ def extract_level(output: str) -> str:
 
 def benchmark(model_id, dataset):
     tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer.padding_side = 'left'
+    tokenizer.pad_token = tokenizer.eos_token
+    
     model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto")
     model.eval()
     pipe = pipeline(
