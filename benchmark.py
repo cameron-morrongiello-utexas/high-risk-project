@@ -32,7 +32,7 @@ def benchmark(model, tokenizer, dataset):
         model=model,
         tokenizer=tokenizer,
         max_new_tokens=MAX_NEW_TOKENS,
-        do_sample=True,
+        do_sample=False,
         temperature=0.0,
         repetition_penalty=2.0,
         return_full_text=False
