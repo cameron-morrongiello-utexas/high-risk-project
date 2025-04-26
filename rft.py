@@ -24,6 +24,7 @@ def format_example(input: str, output: str) -> dict[str, str]:
         "question": input,
         "answer": output
     }
+    print(f"{formatted=}")
     return formatted
 
 
@@ -64,7 +65,7 @@ def train_model(
         report_to="tensorboard",
         per_device_train_batch_size=32,
         gradient_checkpointing=True,
-        num_train_epochs=10,
+        num_train_epochs=1,
         learning_rate=7e-4,
         logging_steps=10,
         label_names=["labels"]
