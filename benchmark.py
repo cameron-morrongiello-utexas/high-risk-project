@@ -29,7 +29,7 @@ def benchmark(model_id, dataset):
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     tokenizer.padding_side = 'left'
     tokenizer.pad_token = tokenizer.eos_token
-    
+
     model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto")
     model.eval()
     pipe = pipeline(
@@ -45,12 +45,12 @@ def benchmark(model_id, dataset):
     prompts = dataset["prompt"]
     golds = dataset["label"]
     all_outputs = pipe(prompts, batch_size=BATCH_SIZE)
-    for output, gold in zip(all_outputs, golds):
-        prediction = extract_level(output["generated_text"])
+    for outputs, gold in zip(all_outputs, golds):
+        prediction = extract_level(outputs[0]["generated_text"])
         if prediction != "Unknown":
             answered += 1
-        if prediction == gold:
-            correct += 1
+            if prediction == gold:
+                correct += 1
         total += 1
     accuracy = correct / total if total else 0
     answer_rate = answered / total if total else 0
