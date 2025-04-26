@@ -9,7 +9,7 @@ DATA_PATH = Path("data/test.jsonl")
 TRIAGE_SNIPPET = f"Possible triage levels: {', '.join(triage_levels)}.\n"
 BASE_MODEL = "HuggingFaceTB/SmolLM2-360M-Instruct"
 FT_MODEL = "model/rft_model"
-MAX_NEW_TOKENS = 200
+MAX_NEW_TOKENS = 100
 BATCH_SIZE = 4
 
 def load_and_prepare_data(path):
@@ -33,9 +33,7 @@ def benchmark(model, tokenizer, dataset):
         tokenizer=tokenizer,
         max_new_tokens=MAX_NEW_TOKENS,
         do_sample=True,
-        temperature=0.7,
-        top_k=50,
-        top_p=0.95,
+        temperature=0.0,
         repetition_penalty=2.0,
         return_full_text=False
     )
