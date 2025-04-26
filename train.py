@@ -40,8 +40,8 @@ class TriageFineTuner:
 
     def preprocess(self, dataset):
         def format(example):
-            prompt = example["symptom_description"].strip()
-            completion = f"Reasoning: Based on the symptoms and history, the patient requires {example['triage_level']}.\nTriage Level: {example['triage_level']}"
+            prompt = example["input"].strip()
+            completion = example["output"].strip()
             return {"text": f"{prompt}\n{completion}"}
 
         dataset = dataset.map(format)
