@@ -106,7 +106,7 @@ class TriageFineTuner:
         tokenizer = GPT2Tokenizer.from_pretrained(self.output_dir)
 
         model.eval()
-        inputs = tokenizer(input_text, return_tensors="pt")
+        inputs = inputs = tokenizer(input_text, return_tensors="pt", padding=True, truncation=True, return_attention_mask=True)
         outputs = model.generate(
             inputs["input_ids"],
             max_length=max_length,
