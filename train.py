@@ -83,7 +83,7 @@ class TriageFineTuner:
             logging_dir="./logs",
             logging_steps=50,
             fp16=torch.cuda.is_available(),
-            report_to="none",
+            report_to="tensorboard",
             label_names=["labels"]
         )
 
