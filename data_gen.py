@@ -82,8 +82,8 @@ def generate_case():
         "output": output
     }
 
-filename = "data/valid.jsonl"
+filename = "data/test.jsonl"
 with open(filename, "w") as f:
-    for _ in range(1000):
+    for _ in range(100):
         case = generate_case()
         f.write(json.dumps(case) + "\n")

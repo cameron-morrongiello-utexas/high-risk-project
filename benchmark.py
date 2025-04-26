@@ -2,17 +2,21 @@ import json
 from pathlib import Path
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from datasets import Dataset as HFDataset
 
 triage_levels = ["Emergency Room", "Urgent Care", "Primary Care", "Self-Care"]
 DATA_PATH = Path("data/valid.jsonl")
 BASE_MODEL = "HuggingFaceTB/SmolLM2-360M-Instruct"
 FT_MODEL = "model/rft_model"
-MAX_INPUT_LEN = 512
 MAX_NEW_TOKENS = 200
+BATCH_SIZE = 4
 
-def load_jsonl(path):
+def load_and_prepare_data(path):
     with open(path) as f:
-        return [json.loads(line) for line in f]
+        lines = [json.loads(line) for line in f]
+    prompts = [ex["input"] for ex in lines]
+    labels = [ex["output"].split(":")[1].strip() for ex in lines]
+    return HFDataset.from_dict({"prompt": prompts, "label": labels})
 
 def extract_level(output: str) -> str:
     for level in triage_levels:
@@ -20,11 +24,10 @@ def extract_level(output: str) -> str:
             return level
     return "Unknown"
 
-def benchmark(model_id, data):
+def benchmark(model_id, dataset):
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto")
     model.eval()
-
     pipe = pipeline(
         "text-generation",
         model=model,
@@ -32,29 +35,22 @@ def benchmark(model_id, data):
         max_new_tokens=MAX_NEW_TOKENS,
         return_full_text=False
     )
-
     correct = 0
     total = 0
-
-    for ex in tqdm(data, desc=f"Benchmarking {model_id}"):
-        prompt = ex['input']
-        result = pipe(prompt)[0]['generated_text']
-        prediction = extract_level(result)
-        gold = ex["output"].split(":")[1].strip()
-        if prediction == gold:
+    prompts = dataset["prompt"]
+    golds = dataset["label"]
+    all_outputs = pipe(prompts, batch_size=BATCH_SIZE)
+    predictions = [extract_level(output["generated_text"]) for output in all_outputs]
+    for pred, gold in zip(predictions, golds):
+        if pred == gold:
             correct += 1
         total += 1
-
-    accuracy = correct / total if total else 0
-    return accuracy
-
+    return correct / total if total else 0
 
 if __name__ == "__main__":
-    data = load_jsonl(DATA_PATH)
-
-    base_acc = benchmark(BASE_MODEL, data)
-    ft_acc = benchmark(FT_MODEL, data)
-
+    dataset = load_and_prepare_data(DATA_PATH)
+    base_acc = benchmark(BASE_MODEL, dataset)
+    ft_acc = benchmark(FT_MODEL, dataset)
     print("\n--- Benchmark Results ---")
-    print(f"Base Model Accuracy:     {base_acc:.2%}")
-    print(f"Fine-Tuned Model Accuracy: {ft_acc:.2%}")
+    print(f"Base Model Accuracy:      {base_acc:.2%}")
+    print(f"Fine-Tuned Model Accuracy:{ft_acc:.2%}")
