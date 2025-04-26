@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from datasets import Dataset as HFDataset
 
@@ -45,8 +44,10 @@ def benchmark(model_id, dataset):
     prompts = dataset["prompt"]
     golds = dataset["label"]
     all_outputs = pipe(prompts, batch_size=BATCH_SIZE)
-    for outputs, gold in zip(all_outputs, golds):
-        prediction = extract_level(outputs[0]["generated_text"])
+    for output_group, gold in zip(all_outputs, golds):
+        output = output_group[0] if isinstance(output_group, list) else output_group
+        print(f"{output=}")
+        prediction = extract_level(output["generated_text"])
         if prediction != "Unknown":
             answered += 1
             if prediction == gold:
