@@ -36,8 +36,14 @@ def benchmark(model_id, dataset):
         model=model,
         tokenizer=tokenizer,
         max_new_tokens=MAX_NEW_TOKENS,
+        do_sample=True,
+        temperature=0.7,
+        top_k=50,
+        top_p=0.95,
+        repetition_penalty=2.0,
         return_full_text=False
     )
+    
     correct = 0
     total = 0
     answered = 0
@@ -45,8 +51,7 @@ def benchmark(model_id, dataset):
     golds = dataset["label"]
     all_outputs = pipe(prompts, batch_size=BATCH_SIZE)
     for output_group, gold in zip(all_outputs, golds):
-        print(output_group)
-        prediction = extract_level(output_group)
+        prediction = extract_level(output_group[0]['generate_text'])
         if prediction != "Unknown":
             answered += 1
             if prediction == gold:
