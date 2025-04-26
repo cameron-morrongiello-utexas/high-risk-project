@@ -45,9 +45,8 @@ def benchmark(model_id, dataset):
     golds = dataset["label"]
     all_outputs = pipe(prompts, batch_size=BATCH_SIZE)
     for output_group, gold in zip(all_outputs, golds):
-        output = output_group[0] if isinstance(output_group, list) else output_group
-        print(f"{output=}")
-        prediction = extract_level(output["generated_text"])
+        print(output_group)
+        prediction = extract_level(output_group)
         if prediction != "Unknown":
             answered += 1
             if prediction == gold:
