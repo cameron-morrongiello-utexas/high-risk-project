@@ -16,7 +16,7 @@ def load_and_prepare_data(path):
     with open(path) as f:
         lines = [json.loads(line) for line in f]
     prompts = [f"{TRIAGE_SNIPPET}{ex['input']}" for ex in lines]
-    labels = [ex["output"].split(":")[1].strip() for ex in lines]
+    labels = [ex["output"].split(":")[1].strip().replace(".", "") for ex in lines]
     return HFDataset.from_dict({"prompt": prompts, "label": labels})
 
 def extract_level(output: str) -> str:
@@ -34,7 +34,8 @@ def benchmark(model, tokenizer, dataset):
         max_new_tokens=MAX_NEW_TOKENS,
         do_sample=False,
         temperature=0.0,
-        return_full_text=False
+        return_full_text=False,
+        repetition_penalty=2.0
     )
 
     correct = 0
