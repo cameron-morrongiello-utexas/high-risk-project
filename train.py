@@ -84,6 +84,7 @@ class TriageFineTuner:
             logging_steps=50,
             fp16=torch.cuda.is_available(),
             report_to="none",
+            label_names=["labels"]
         )
 
         trainer = Trainer(
@@ -124,7 +125,7 @@ def main(
     model_name="gpt2",
     dataset_path="synthetic_triage_cases_with_secondary_decisions.jsonl",
     output_dir="./output",
-    epochs=3,
+    epochs=10,
     batch_size=4,
     input_text=None,
 ):
