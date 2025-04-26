@@ -35,7 +35,6 @@ def benchmark(model, tokenizer, dataset):
         do_sample=False,
         temperature=0.0,
         return_full_text=False,
-        repetition_penalty=2.0
     )
 
     correct = 0
