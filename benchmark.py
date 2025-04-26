@@ -5,7 +5,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from datasets import Dataset as HFDataset
 
 triage_levels = ["Emergency Room", "Urgent Care", "Primary Care", "Self-Care"]
-DATA_PATH = Path("data/valid.jsonl")
+DATA_PATH = Path("data/test.jsonl")
+TRIAGE_SNIPPET = f"Possible triage levels: {', '.join(triage_levels)}.\n"
 BASE_MODEL = "HuggingFaceTB/SmolLM2-360M-Instruct"
 FT_MODEL = "model/rft_model"
 MAX_NEW_TOKENS = 200
@@ -14,7 +15,7 @@ BATCH_SIZE = 4
 def load_and_prepare_data(path):
     with open(path) as f:
         lines = [json.loads(line) for line in f]
-    prompts = [ex["input"] for ex in lines]
+    prompts = [f"{TRIAGE_SNIPPET}{ex['input']}" for ex in lines]
     labels = [ex["output"].split(":")[1].strip() for ex in lines]
     return HFDataset.from_dict({"prompt": prompts, "label": labels})
 
@@ -37,20 +38,27 @@ def benchmark(model_id, dataset):
     )
     correct = 0
     total = 0
+    answered = 0
     prompts = dataset["prompt"]
     golds = dataset["label"]
     all_outputs = pipe(prompts, batch_size=BATCH_SIZE)
-    predictions = [extract_level(output["generated_text"]) for output in all_outputs]
-    for pred, gold in zip(predictions, golds):
-        if pred == gold:
+    for output, gold in zip(all_outputs, golds):
+        prediction = extract_level(output["generated_text"])
+        if prediction != "Unknown":
+            answered += 1
+        if prediction == gold:
             correct += 1
         total += 1
-    return correct / total if total else 0
+    accuracy = correct / total if total else 0
+    answer_rate = answered / total if total else 0
+    return accuracy, answer_rate
 
 if __name__ == "__main__":
     dataset = load_and_prepare_data(DATA_PATH)
-    base_acc = benchmark(BASE_MODEL, dataset)
-    ft_acc = benchmark(FT_MODEL, dataset)
+    base_acc, base_ans = benchmark(BASE_MODEL, dataset)
+    ft_acc, ft_ans = benchmark(FT_MODEL, dataset)
     print("\n--- Benchmark Results ---")
     print(f"Base Model Accuracy:      {base_acc:.2%}")
+    print(f"Base Model Answer Rate:   {base_ans:.2%}")
     print(f"Fine-Tuned Model Accuracy:{ft_acc:.2%}")
+    print(f"Fine-Tuned Answer Rate:   {ft_ans:.2%}")
