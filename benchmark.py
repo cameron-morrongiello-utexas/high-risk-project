@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from datasets import Dataset as HFDataset
+from peft import PeftModel
 
 triage_levels = ["Emergency Room", "Urgent Care", "Primary Care", "Self-Care"]
 DATA_PATH = Path("data/test.jsonl")
@@ -24,12 +25,7 @@ def extract_level(output: str) -> str:
             return level
     return "Unknown"
 
-def benchmark(model_id, dataset):
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    tokenizer.padding_side = 'left'
-    tokenizer.pad_token = tokenizer.eos_token
-
-    model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto")
+def benchmark(model, tokenizer, dataset):
     model.eval()
     pipe = pipeline(
         "text-generation",
@@ -63,9 +59,20 @@ def benchmark(model_id, dataset):
     return accuracy, answer_rate
 
 if __name__ == "__main__":
-    dataset = load_and_prepare_data(DATA_PATH)
-    base_acc, base_ans = benchmark(BASE_MODEL, dataset)
-    ft_acc, ft_ans = benchmark(FT_MODEL, dataset)
+    test_dataset = load_and_prepare_data(DATA_PATH)
+
+    base_tokenizer = AutoTokenizer.from_pretrained(FT_MODEL)
+    base_tokenizer.padding_side = 'left'
+    base_tokenizer.pad_token = base_tokenizer.eos_token
+
+    base_model = AutoModelForCausalLM.from_pretrained(FT_MODEL, device_map="auto")
+
+    ft_model = PeftModel.from_pretrained(base_model, FT_MODEL)
+
+
+    base_acc, base_ans = benchmark(base_model, base_tokenizer, test_dataset)
+    ft_acc, ft_ans = benchmark(ft_model, base_tokenizer, test_dataset)
+
     print("\n--- Benchmark Results ---")
     print(f"Base Model Accuracy:      {base_acc:.2%}")
     print(f"Base Model Answer Rate:   {base_ans:.2%}")
