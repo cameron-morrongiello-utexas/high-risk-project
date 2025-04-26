@@ -1,5 +1,5 @@
-from .base_llm import BaseLLM
-from .data import Dataset
+from model.base_llm import BaseLLM
+from model.data import Dataset
 
 
 def load() -> BaseLLM:
@@ -24,7 +24,6 @@ def format_example(input: str, output: str) -> dict[str, str]:
         "question": input,
         "answer": output
     }
-    print(f"{formatted=}")
     return formatted
 
 

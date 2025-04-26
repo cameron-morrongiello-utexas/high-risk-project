@@ -1,21 +1,4 @@
-from .base_llm import BaseLLM
-from .data import Dataset
-
-
-def load() -> BaseLLM:
-    from pathlib import Path
-
-    from peft import PeftModel
-
-    model_name = "sft_model"
-    model_path = Path(__file__).parent / model_name
-
-    llm = BaseLLM()
-    llm.model = PeftModel.from_pretrained(llm.model, model_path).to(llm.device)
-    llm.model.eval()
-
-    return llm
-
+from model.data import Dataset
 
 def tokenize(tokenizer, question: str, answer: str):
     """
@@ -64,6 +47,26 @@ class TokenizedDataset:
         return len(self.data)
 
     def __getitem__(self, idx):
-        formated_data = self.format_fn(*self.data[idx])
-        return tokenize(self.tokenizer, **formated_data)
+        formatted_data = self.format_fn(**self.data[idx])
+        return tokenize(self.tokenizer, **formatted_data)
 
+
+
+if __name__ == "__main__":
+
+    def format_example(input: str, output: str) -> dict[str, str]:
+        """
+        Construct a question / answer pair
+        """
+        formatted = {
+            "question": input,
+            "answer": output
+        }
+        print(f"{formatted=}")
+        return formatted
+    
+    train = Dataset("train")
+
+    td = TokenizedDataset(None, train, format_example)
+
+    print(td[0])

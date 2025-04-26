@@ -2,9 +2,9 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from .base_llm import BaseLLM
+from model.base_llm import BaseLLM
 
-DATA_DIR = Path(__file__).parent / "data"
+DATA_DIR = Path(__file__).parent.parent / "data"
 
 
 class Dataset:
