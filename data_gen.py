@@ -1,7 +1,6 @@
 import json
 import random
 
-# Components for synthetic triage scenarios
 ages = list(range(1, 90))
 genders = ["male", "female", "non-binary"]
 symptoms = [
@@ -27,7 +26,6 @@ histories = [
 ]
 triage_levels = ["Emergency Room", "Urgent Care", "Primary Care", "Self-Care"]
 
-# Mapping symptoms to triage levels and rationales
 triage_mapping = {
     "chest pain": ("Emergency Room", "Chest pain could indicate a heart attack or other serious cardiac issues."),
     "severe headache": ("Urgent Care", "A sudden severe headache might be a sign of a neurological emergency."),
@@ -41,7 +39,6 @@ triage_mapping = {
     "dizziness": ("Emergency Room", "Sudden dizziness or fainting may signal serious issues like stroke or cardiac dysfunction.")
 }
 
-# Generate a case with rationale, considering time and history
 def generate_case():
     age = random.choice(ages)
     gender = random.choice(genders)
@@ -85,9 +82,8 @@ def generate_case():
         "output": output
     }
 
-# Generate and save 100 examples to .jsonl
-filename = "synthetic_triage_cases_with_secondary_decisions.jsonl"
+filename = "data/valid.jsonl"
 with open(filename, "w") as f:
-    for _ in range(100):
+    for _ in range(1000):
         case = generate_case()
         f.write(json.dumps(case) + "\n")
