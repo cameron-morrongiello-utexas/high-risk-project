@@ -94,7 +94,7 @@ def test_model(ckpt_path: str):
     # benchmark_result = benchmark(llm, testset, 100)
     # print(f"{benchmark_result.accuracy=}  {benchmark_result.answer_rate=}")
 
-    llm.batched_generate([testset[0]['input']])
+    print(llm.batched_generate([testset[0]['input']]))
 
 
 if __name__ == "__main__":
