@@ -43,7 +43,7 @@ def benchmark(model_id, dataset):
         repetition_penalty=2.0,
         return_full_text=False
     )
-    
+
     correct = 0
     total = 0
     answered = 0
@@ -51,7 +51,8 @@ def benchmark(model_id, dataset):
     golds = dataset["label"]
     all_outputs = pipe(prompts, batch_size=BATCH_SIZE)
     for output_group, gold in zip(all_outputs, golds):
-        prediction = extract_level(output_group[0]['generate_text'])
+        print(f"{output_group=}")
+        prediction = extract_level(output_group[0]['generated_text'])
         if prediction != "Unknown":
             answered += 1
             if prediction == gold:
