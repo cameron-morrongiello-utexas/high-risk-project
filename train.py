@@ -78,7 +78,7 @@ class TriageFineTuner:
             num_train_epochs=self.epochs,
             per_device_train_batch_size=self.batch_size,
             per_device_eval_batch_size=self.batch_size,
-            evaluation_strategy="epoch",
+            eval_strategy="epoch",
             save_strategy="epoch",
             logging_dir="./logs",
             logging_steps=50,
